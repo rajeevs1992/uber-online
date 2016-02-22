@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block content %}
+<h1 class='page-heading'>Confirm ride</h1>
+    <h4 class='page-sub-heading'>Request info</h4>
+    <div class='info'>
+        <div class='info-row'>
+            <span class='info-key'>Latitude</span>
+            <span class='info-value'></span>
+        </div>
+        <div class='info-row'>
+            <span class='info-key'>Longitude</span>
+            <span class='info-value'></span>
+        </div>
+        <div class='info-row'>
+            <span class='info-key'>Cab type</span>
+            <span class='info-value'></span>
+        </div>
+    </div>
+    <h4 class='page-sub-heading'>Cab info</h4>
+    <div class='info'>
+        <div class='info-row'>
+            <span class='info-key'>Cab number</span>
+            <span class='info-value'></span>
+        </div>
+        <div class='info-row'>
+            <span class='info-key'>Cab type</span>
+            <span class='info-value'></span>
+        </div>
+        <div class='info-row'>
+            <span class='info-key'>Driver name</span>
+            <span class='info-value'></span>
+        </div>
+        <div class='info-row'>
+            <span class='info-key'>Surge</span>
+            <span class='info-value'></span>
+        </div>
+    </div>
+    <form method='post'>
+        {% csrf_token %}
+        <input type=submit>
+    </form>
+{% endblock %}

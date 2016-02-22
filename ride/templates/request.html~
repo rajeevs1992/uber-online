@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block content %}
+<h1 class='page-heading'>Request a ride</h1>
+<h4 class='page-sub-heading'>My location</h4>
+<div class='request-form'>
+    <form method='post'>
+        {{ form.as_p() }}
+        <div class='submit-button'>
+            <input type='submit' value='Check for rides' />
+        </div>
+    </form>
+</div>
+<script>
+    function PopulateLocation()
+    {
+        
+    }
+
+<script>
+{% endblock %}

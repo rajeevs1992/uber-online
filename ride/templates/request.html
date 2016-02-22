@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block content %}
+<script>
+    function PopulateLocation()
+    {
+        if (navigator.geolocation)
+        {
+            navigator.geolocation.getCurrentPosition(function (loc) {
+                debugger;
+                var lat = document.getElementById('id_latitude');
+                lat.value = loc.coords.latitude;
+                var lng = document.getElementById('id_longitude');
+                lng.value = loc.coords.longitude;
+                
+            });
+        } 
+    }
+</script>
+<h1 class='page-heading'>Request a ride</h1>
+<h4 class='page-sub-heading'>My location</h4>
+<div class='request-form'>
+    <form method='post' action'/ride/confirm'>
+        {% csrf_token %}
+        {{ form.as_p }}
+        <div class='button'>
+            <a href='javascript:;' onclick='PopulateLocation()'>Refresh location</a>
+        </div>
+        <div class='submit-button'>
+            <input type='submit' value='Check for rides' />
+        </div>
+    </form>
+</div>
+<script>
+    PopulateLocation();
+</script>
+{% endblock %}
