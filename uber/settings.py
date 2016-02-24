@@ -10,7 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.9/ref/settings/
 """
 
-import os
+import os, sys
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -140,3 +140,14 @@ REDIRECT_URI = 'http://localhost:8000/ride/action'
 if not DEBUG:
     API_URL = 'https://api.uber.com'
     REDIRECT_URI = 'https://uber-online.herokuapp.com/ride/action'
+
+LOGGING = {
+    'handlers': {
+        'console':{
+            'level':'INFO',
+            'class':'logging.StreamHandler',
+            'strm': sys.stdout
+        },
+        ...
+    }
+}
