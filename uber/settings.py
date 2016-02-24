@@ -143,21 +143,11 @@ if not DEBUG:
 ADMINS = (
     ('Rajeev S', 'rajeevs1992@gmail.com'),
     )
-MANAGERS = ADMINS    
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'handlers': {
-        'mail_admins': {
-            'level': 'ERROR',
-            'class': 'django.utils.log.AdminEmailHandler'
-        }
-    },
-    'loggers': {
-        'django.request': {
-            'handlers': ['mail_admins'],
-            'level': 'ERROR',
-            'propagate': True,
-        },
-    }
-}
+MANAGERS = ADMINS
+EMAIL_USE_TLS = True
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'thetriangle2k13@gmail.com'
+EMAIL_HOST_PASSWORD = 'manoharji'
+DEFAULT_FROM_EMAIL = 'thetriangle2k13@gmail.com'
+DEFAULT_TO_EMAIL = 'rajeevs1992@gmail.com'
