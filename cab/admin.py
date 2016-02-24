@@ -1,3 +1,4 @@
 from django.contrib import admin
+from cab.models import CabType
 
-# Register your models here.
+admin.site.register(CabType)

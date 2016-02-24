@@ -1,7 +1,19 @@
 from django import forms
 from cab.models import CabType
+from ride.models import Destination
 
 class RequestForm(forms.Form):
-    latitude = forms.CharField(max_length=50)
-    longitude = forms.CharField(max_length=50)
-    cab_type = forms.ModelChoiceField(queryset=CabType.objects.all().order_by('name'))
+    from_latitude = forms.CharField(max_length=50)
+    from_longitude = forms.CharField(max_length=50)
+
+    to_latitude = forms.CharField(max_length=50, required=False)
+    to_longitude = forms.CharField(max_length=50, required=False)
+
+    destination = forms.ModelChoiceField(queryset=Destination.objects.none(),
+                                         label='Or choose detination from dropdown',
+                                         required=False)
+
+    def __init__(self, user, *args, **kwargs):
+        super(RequestForm, self).__init__(*args, **kwargs)
+        self.fields['destination'].queryset = Destination.objects.filter(user=user)
+

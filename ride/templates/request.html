@@ -6,10 +6,9 @@
         if (navigator.geolocation)
         {
             navigator.geolocation.getCurrentPosition(function (loc) {
-                debugger;
-                var lat = document.getElementById('id_latitude');
+                var lat = document.getElementById('id_from_latitude');
                 lat.value = loc.coords.latitude;
-                var lng = document.getElementById('id_longitude');
+                var lng = document.getElementById('id_from_longitude');
                 lng.value = loc.coords.longitude;
                 
             });

@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block content %}
+<h1 class='page-heading'>Success!!</h1>
+    <h4 class='page-sub-heading'>Request info</h4>
+    <div class='info'>
+        <div class='info-row'>
+            <span class='info-key'>From Latitude</span>
+            <span class='info-value'>{{ req.from_latitude }}</span>
+        </div>
+        <div class='info-row'>
+            <span class='info-key'>From Longitude</span>
+            <span class='info-value'>{{ req.from_longitude }}</span>
+        </div>
+        <div class='info-row'>
+            <span class='info-key'>To Latitude</span>
+            <span class='info-value'>{{ req.to_latitude }}</span>
+        </div>
+        <div class='info-row'>
+            <span class='info-key'>To Longitude</span>
+            <span class='info-value'>{{ req.to_longitude }}</span>
+        </div>
+    </div>
+    <h4 class='page-sub-heading'>Cab info</h4>
+    <div class='info'>
+        <div class='info-row'>
+            <span class='info-key'>Status</span>
+            <span class='info-value'>{{ details.status }}</span>
+        </div>
+        <div class='info-row'>
+            <span class='info-key'>driver</span>
+            <span class='info-value'>{{ details.driver }}</span>
+        </div>
+        <div class='info-row'>
+            <span class='info-key'>Arrives in</span>
+            <span class='info-value'>{{ details.eta }}</span>
+        </div>
+        <div class='info-row'>
+            <span class='info-key'>Location</span>
+            <span class='info-value'>{{ details.location }}</span>
+        </div>
+        <div class='info-row'>
+            <span class='info-key'>Vehicle</span>
+            <span class='info-value'>{{ details.vehicle }}</span>
+        </div>
+        <div class='info-row'>
+            <span class='info-key'>Surge</span>
+            <span class='info-value'>{{ details.surge }}</span>
+        </div>
+        <div class='info-row'>
+            <span class='info-key'>Delete</span>
+            <span class='info-value'>
+                <a href='/ride/delete/{{ req.id }}'>Delete</a>
+            </span>
+        </div>
+    </div>
+{% endblock %}

@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'guest',
     'ride',
     'cab',
+    'credential',
 ]
 
 MIDDLEWARE_CLASSES = [
@@ -126,3 +127,5 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static"),
         ]
+
+LOGIN_URL = '/'
