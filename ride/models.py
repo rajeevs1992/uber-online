@@ -13,7 +13,7 @@ class Destination(models.Model):
         return self.name
 
 class Request(models.Model):
-    user = models.OneToOneField(User)
+    user = models.ForeignKey(User)
     from_latitude = models.CharField(max_length=128)
     from_longitude = models.CharField(max_length=128)
     to_latitude = models.CharField(max_length=128)

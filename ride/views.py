@@ -3,6 +3,7 @@ import requests
 import datetime
 
 from ride.forms import RequestForm
+from django.contrib import messages
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.shortcuts import render, redirect
@@ -15,11 +16,11 @@ from credential import access_credential as cred
 @login_required
 def index(request):
     if request.method == 'GET':
-        pending = Request.objects.filter(user=request.user)
+        pending = Request.objects.filter(user=request.user, pending=True)
         if pending:
             if pending.first().requestid:
                 return redirect('status')
-            pending.delete()
+            pending.update(pending=False)
         return render(request, 'request.html', {'form' : RequestForm(request.user)})
     else:
         form = RequestForm(request.user, request.POST)
@@ -51,7 +52,7 @@ def index(request):
 @login_required
 def select(request):
     if request.method == 'GET':
-        req = Request.objects.filter(user=request.user).first()
+        req = Request.objects.filter(user=request.user, pending=True).first()
         if req is None:
             return redirect('request')
         credential = UberCredential.objects.filter(user=request.user).first()
@@ -130,7 +131,7 @@ def action(request, target):
         credential.save()
         return redirect('select')
     elif target == 'surge':
-        req = Request.objects.get(user=request.user)
+        req = Request.objects.get(user=request.user, pending=True)
         return redirect('book', productid=req.productid)
     elif target == 'reauth':
         UberCredential.objects.filter(user=request.user).delete()
@@ -146,7 +147,7 @@ def action(request, target):
 def book(request, productid):
     api = settings.API_URL + '/v1/requests'
     credential = UberCredential.objects.get(user=request.user)
-    req = Request.objects.get(user=request.user)
+    req = Request.objects.get(user=request.user, pending=True)
     if req.requestid is None:
         req.productid = productid
         headers = {}
@@ -177,14 +178,15 @@ def book(request, productid):
 
 @login_required
 def delete(request):
-    r = Request.objects.get(user=request.user)
+    r = Request.objects.get(user=request.user, pending=True)
     credential = UberCredential.objects.get(user=request.user)
     headers = {}
     headers['Authorization'] = 'Bearer ' + credential.access_token
     api = settings.API_URL + '/v1/requests/' + r.requestid
     response = requests.delete(api, headers=headers)
     if response.status_code == 204:
-        r.delete()
+        r.pending = False
+        r.save()
         return redirect('request')
     else:
         return redirect('status')
@@ -192,13 +194,19 @@ def delete(request):
 @login_required
 def status(request):
     api = settings.API_URL + '/v1/requests/'
-    r = Request.objects.get(user=request.user)
+    r = Request.objects.get(user=request.user, pending=True)
     credential = UberCredential.objects.get(user=request.user)
     headers = {}
     headers['Authorization'] = 'Bearer ' + credential.access_token
     response = requests.get(api + r.requestid, headers=headers)
 
-    args = {}
-    args['details'] = BookingDetails(response.json())
-    args['req'] = r
-    return render(request, 'status.html', args)
+    if response.status_code == 200:
+        args = {}
+        args['details'] = BookingDetails(response.json())
+        args['req'] = r
+        return render(request, 'status.html', args)
+    else:
+        r.pending = False
+        r.save()
+        messages.error(request, response.json())
+        return redirect('request')
