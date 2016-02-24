@@ -25,7 +25,7 @@ SECRET_KEY = '8nddbxay6lvrfvt5qh*opu$m_bg+*ul(_olggud8y5^chp*w7m'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['.herokuapp.com']
+ALLOWED_HOSTS = ['.herokuapp.com','localhost']
 
 # Application definition
 
@@ -150,5 +150,5 @@ SERVER_EMAIL='blah@blah.com'
 ADMINS = (
     ('Rajeev S', 'rajeevs1992@gmail.com'),
     )
-MANAGERS = ADMINMANAGERS = ADMINSS    
+MANAGERS = ADMINS    
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
