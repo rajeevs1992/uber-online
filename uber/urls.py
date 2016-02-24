@@ -19,7 +19,7 @@ from django.contrib import admin
 from django.conf import settings
 
 urlpatterns = [
+    url(r'^', include('guest.urls')),
     url(r'^admin/', admin.site.urls),
-    url(r'^guest/', include('guest.urls')),
     url(r'^ride/', include('ride.urls')),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

@@ -1,3 +1,5 @@
 from django.contrib import admin
+from ride.models import Destination, Request
 
-# Register your models here.
+admin.site.register(Destination)
+admin.site.register(Request)

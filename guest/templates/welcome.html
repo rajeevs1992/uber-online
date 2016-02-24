@@ -1,4 +1,10 @@
 {% extends "base.html" %}
 {% block content %}
-    <hello-world>Loading...</hello-world>
+    <div class='loginform'>
+        <form method='post'>
+            {% csrf_token %}
+            {{ form.as_p }}
+            <input type='submit' value='Login' />
+        </form>
+    </div>
 {% endblock %}
