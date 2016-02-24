@@ -11,6 +11,8 @@ from cab.models import Cab
 from credential.models import UberCredential
 from credential import access_credential as cred
 
+root = 'https://sandbox-api.uber.com'
+
 @login_required
 def index(request):
     if request.method == 'GET':
@@ -41,12 +43,12 @@ def index(request):
         req.pending = True
         req.book_date = datetime.datetime.now()
         req.save()
-        return redirect('select', requestid=req.id)
+        return redirect('select')
 
 @login_required
-def select(request, requestid):
+def select(request):
     if request.method == 'GET':
-        req = Request.objects.filter(pk=requestid, user=request.user).first()
+        req = Request.objects.filter(user=request.user).first()
         if req is None:
             return redirect('request')
         credential = UberCredential.objects.filter(user=request.user).first()
@@ -62,7 +64,7 @@ def select(request, requestid):
         return render(request, 'select.html', args)
 
 def get_products(req):
-    api = 'https://api.uber.com/v1/products'
+    api = root + '/v1/products'
     params = {}
     params['server_token'] = cred.UBER_SERVER_TOKEN
     params['latitude'] = req.from_latitude
@@ -105,43 +107,57 @@ def action(request, target):
 
 @login_required
 def book(request, productid):
-    api = 'https://sandbox-api.uber.com/v1/requests'
+    api = root + '/v1/requests'
     credential = UberCredential.objects.get(user=request.user)
     req = Request.objects.get(user=request.user)
-    req.productid = productid
-    headers = {}
-    headers['Authorization'] = 'Bearer ' + credential.access_token
-    headers['Content-Type'] = 'application/json'
-    params = {}
-    params['start_latitude'] = req.from_latitude
-    params['start_longitude'] = req.from_longitude
-    params['end_latitude'] = req.to_latitude
-    params['end_longitude'] = req.to_longitude
-    params['product_id'] = productid
-    if req.surge_confirmation_id:
-        params['surge_confirmation_id'] = req.surge_confirmation_id
+    if req.requestid is None:
+        req.productid = productid
+        headers = {}
+        headers['Authorization'] = 'Bearer ' + credential.access_token
+        headers['Content-Type'] = 'application/json'
+        params = {}
+        params['start_latitude'] = req.from_latitude
+        params['start_longitude'] = req.from_longitude
+        params['end_latitude'] = req.to_latitude
+        params['end_longitude'] = req.to_longitude
+        params['product_id'] = productid
+        if req.surge_confirmation_id:
+            params['surge_confirmation_id'] = req.surge_confirmation_id
 
-    response = requests.post(api, json=params, headers=headers)
-    if response.status_code == 202:
-        req.requestid = response.json().get('request_id')
-        req.save()
-        args = {}
-        args['details'] = BookingDetails(response.json())
-        args['req'] = req
-        return render(request, 'complete.html', args)
-    elif response.status == 409:
-        r = response.json()
-        if 'surge_confirmation' in r['meta']:
-            req.surge_confirmation_id = r['meta']['surge_confirmation']['surge_confirmation_id']
+        response = requests.post(api, json=params, headers=headers)
+        if response.status_code == 202:
+            req.requestid = response.json().get('request_id')
             req.save()
-            return redirect(r['meta']['surge_confirmation']['href'])
+            return redirect('status')
+        elif response.status == 409:
+            r = response.json()
+            if 'surge_confirmation' in r['meta']:
+                req.surge_confirmation_id = r['meta']['surge_confirmation']['surge_confirmation_id']
+                req.save()
+                return redirect(r['meta']['surge_confirmation']['href'])
+    else:
+        return redirect('status')
 
 @login_required
-def delete(request, requestid):
-    r = Request.objects.get(pk=requestid)
+def delete(request):
+    r = Request.objects.get(user=request.user)
     credential = UberCredential.objects.get(user=request.user)
     headers = {}
     headers['Authorization'] = 'Bearer ' + credential.access_token
-    api = 'https://api.uber.com/v1/requests/' + r.requestid
+    api = root + '/v1/requests/' + r.requestid
     r = requests.delete(api, headers=headers)
     return redirect('request')
+
+@login_required
+def status(request):
+    api = root + '/v1/requests/'
+    r = Request.objects.get(user=request.user)
+    credential = UberCredential.objects.get(user=request.user)
+    headers = {}
+    headers['Authorization'] = 'Bearer ' + credential.access_token
+    response = requests.get(api + r.requestid, headers=headers)
+
+    args = {}
+    args['details'] = BookingDetails(response.json())
+    args['req'] = r
+    return render(request, 'status.html', args)

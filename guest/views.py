@@ -2,6 +2,7 @@ from guest.forms import LoginForm
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate,login,logout
 from django.contrib.auth.decorators import login_required
+from ride.models import Request
 
 def welcome(request):
     if request.user.is_authenticated():
@@ -25,5 +26,6 @@ def welcome(request):
 
 def user_logout(request):
     if request.user is not None and request.user.is_authenticated():
+        Request.objects.filter(user=request.user).delete()
         logout(request)
     return redirect('welcome')

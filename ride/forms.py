@@ -1,5 +1,4 @@
 from django import forms
-from cab.models import CabType
 from ride.models import Destination
 
 class RequestForm(forms.Form):
