@@ -15,7 +15,11 @@ from credential import access_credential as cred
 @login_required
 def index(request):
     if request.method == 'GET':
-        Request.objects.filter(user=request.user).delete()
+        pending = Request.objects.filter(user=request.user)
+        if pending:
+            if pending.first().requestid:
+                return redirect('status')
+            pending.delete()
         return render(request, 'request.html', {'form' : RequestForm(request.user)})
     else:
         form = RequestForm(request.user, request.POST)
@@ -72,7 +76,6 @@ def get_products(req, request):
     response = requests.get(api, params=params)
     if response.status_code == 200:
         products = response.json()
-
         credential = UberCredential.objects.get(user=request.user)
         headers = {}
         headers['Authorization'] = 'Bearer ' + credential.access_token
@@ -109,11 +112,13 @@ def action(request, target):
 
         response = requests.post(cred.UBER_AUTH_URL,
                                  data=params)
+        if response.status_code != 200:
+            response = response.json()
+            messages.error(request, response)
+            return redirect('request')
         # Ensure single user
         UberCredential.objects.filter(user=request.user).delete()
-
         response = response.json()
-        print response
         credential = UberCredential()
         credential.user = request.user
         credential.authorization_code = authorization_code.strip()
@@ -127,21 +132,15 @@ def action(request, target):
     elif target == 'surge':
         req = Request.objects.get(user=request.user)
         return redirect('book', productid=req.productid)
-    elif target == 'refresh':
+    elif target == 'reauth':
+        UberCredential.objects.filter(user=request.user).delete()
         params = {}
-        credential = UberCredential.objects.get(user=request.user)
-        params['client_secret'] = cred.UBER_CLIENT_SECRET
+        params['response_type'] = 'code'
         params['client_id'] = cred.UBER_CLIENT_ID
-        params['grant_type'] = 'refresh_token'
+        params['scope'] = 'profile request'
         params['redirect_uri'] = settings.REDIRECT_URI + '/auth'
-        params['refresh_token'] = credential.refresh_token
-
-        response = requests.post(cred.UBER_AUTH_URL,
-                                 data=params)
-        response = response.json()
-        cred.access_token = response.get('access_token')
-        cred.save()
-        return redirect('select')
+        return redirect(cred.UBER_LOGIN_URL + '?' + urllib.urlencode(params))
+        return redirect('request')
 
 @login_required
 def book(request, productid):
@@ -183,8 +182,9 @@ def delete(request):
     headers = {}
     headers['Authorization'] = 'Bearer ' + credential.access_token
     api = settings.API_URL + '/v1/requests/' + r.requestid
-    r = requests.delete(api, headers=headers)
-    if r.status_code == 204:
+    response = requests.delete(api, headers=headers)
+    if response.status_code == 204:
+        r.delete()
         return redirect('request')
     else:
         return redirect('status')
