@@ -128,12 +128,12 @@ def action(request, target):
         return redirect('book', productid=req.productid)
     elif target == 'refresh':
         params = {}
-        cred = UberCredential.objects.get(user=request.user)
+        credential = UberCredential.objects.get(user=request.user)
         params['client_secret'] = cred.UBER_CLIENT_SECRET
         params['client_id'] = cred.UBER_CLIENT_ID
         params['grant_type'] = 'refresh_token'
         params['redirect_uri'] = settings.REDIRECT_URI + '/auth'
-        params['refresh_token'] = cred.refresh_token
+        params['refresh_token'] = credential.refresh_token
 
         response = requests.post(cred.UBER_AUTH_URL,
                                  data=params)
