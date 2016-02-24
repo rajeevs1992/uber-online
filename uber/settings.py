@@ -151,3 +151,21 @@ EMAIL_HOST_USER = 'romain@getrealhealth.com'
 EMAIL_HOST_PASSWORD = 'lp6Wyj_59Fb6C3ejlx0wfQ'
 DEFAULT_TO_EMAIL = 'rajeevs1992@gmail.com'
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+SERVER_EMAIL = 'django@herokuapp.com'
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'mail_admins': {
+            'level': 'ERROR',
+            'class': 'django.utils.log.AdminEmailHandler'
+        }
+    },
+    'loggers': {
+        'django.request': {
+            'handlers': ['mail_admins'],
+            'level': 'ERROR',
+            'propagate': True,
+        },
+    }
+}
