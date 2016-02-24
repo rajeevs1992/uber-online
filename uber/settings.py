@@ -140,13 +140,6 @@ if not DEBUG:
     API_URL = 'https://api.uber.com'
     REDIRECT_URI = 'https://uber-online.herokuapp.com/ride/action'
 
-EMAIL_HOST = 'smtp-relay.gmail.com'
-EMAIL_PORT = 587
-EMAIL_HOST_USER = 'thetriangle2k13@gmail.com'
-EMAIL_HOST_PASSWORD = 'manoharji'
-EMAIL_SUBJECT_PREFIX = '[ERROR]'
-EMAIL_USE_TLS = True
-SERVER_EMAIL='blah@blah.com'
 ADMINS = (
     ('Rajeev S', 'rajeevs1992@gmail.com'),
     )
