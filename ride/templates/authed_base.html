@@ -1,0 +1,27 @@
+<html>
+    <head>
+    </head>
+    <body>
+        <div class="header">
+            <a href='/logout'>Logout</a>
+            {% if messages %}
+                <ul class="messages">
+                    {% for message in messages %}
+                        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+            {% block header %}
+            {% endblock %}
+        </div>
+        <div class="content">
+            {% block content %}
+            {% endblock %}
+        </div>
+        <div class="footer">
+            {% block footer %}
+            {% endblock %}
+            <a href='/ride/action/reauth'>Reauth with uber</a>
+        </div>
+    </body>
+</html>

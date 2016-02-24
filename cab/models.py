@@ -17,4 +17,4 @@ class Cab:
         self.image = product['image']
         self.display_name = product['display_name']
         self.product_id = product['product_id']
-        self.eta = 0
+        self.eta = None

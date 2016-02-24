@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "authed_base.html" %}
 {% block content %}
 <h1 class='page-heading'>Success!!</h1>
     <h4 class='page-sub-heading'>Request info</h4>
@@ -47,15 +47,21 @@
             <span class='info-value'>{{ details.surge }}</span>
         </div>
         <div class='info-row'>
+            <span class='info-key'>Refresh</span>
+            <span class='info-value'>
+                <a href='/ride/status/'>Refresh</a>
+            </span>
+        </div>
+        <div class='info-row' style='padding-top:20px;'>
             <span class='info-key'>Cancel</span>
             <span class='info-value'>
                 <a href='/ride/delete/' onclick='return confirm("Cancel ride?")'>Cancel</a>
             </span>
         </div>
         <div class='info-row'>
-            <span class='info-key'>Refresh</span>
+            <span class='info-key'>Home</span>
             <span class='info-value'>
-                <a href='/ride/status/'>Refresh</a>
+                <a href='/ride/'>Home</a>
             </span>
         </div>
     </div>
