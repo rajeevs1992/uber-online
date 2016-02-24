@@ -115,11 +115,11 @@ def action(request, target):
         response = response.json()
         credential = UberCredential()
         credential.user = request.user
-        credential.authorization_code = authorization_code
-        credential.access_token = response.get('access_token')
-        credential.refresh_token = response.get('refresh_token')
-        credential.expires_in = response.get('expires_in')
-        credential.scope = response.get('scope')
+        credential.authorization_code = authorization_code.strip()
+        credential.access_token = response.get('access_token').strip()
+        credential.refresh_token = response.get('refresh_token').strip()
+        credential.expires_in = response.get('expires_in').strip()
+        credential.scope = response.get('scope').strip()
         credential.created_date = datetime.datetime.now()
         credential.save()
         return redirect('select')
