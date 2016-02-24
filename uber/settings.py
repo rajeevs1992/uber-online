@@ -145,10 +145,9 @@ ADMINS = (
     )
 MANAGERS = ADMINS
 EMAIL_USE_TLS = True
-EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST = 'smtp.mandrillapp.com'
 EMAIL_PORT = 587
-EMAIL_HOST_USER = 'thetriangle2k13@gmail.com'
-EMAIL_HOST_PASSWORD = 'manoharji'
-DEFAULT_FROM_EMAIL = 'thetriangle2k13@gmail.com'
+EMAIL_HOST_USER = 'romain@getrealhealth.com'
+EMAIL_HOST_PASSWORD = 'lp6Wyj_59Fb6C3ejlx0wfQ'
 DEFAULT_TO_EMAIL = 'rajeevs1992@gmail.com'
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
