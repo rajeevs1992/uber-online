@@ -47,9 +47,15 @@
             <span class='info-value'>{{ details.surge }}</span>
         </div>
         <div class='info-row'>
-            <span class='info-key'>Delete</span>
+            <span class='info-key'>Cancel</span>
             <span class='info-value'>
-                <a href='/ride/delete/{{ req.id }}'>Delete</a>
+                <a href='/ride/delete/' onclick='return confirm("Cancel ride?")'>Cancel</a>
+            </span>
+        </div>
+        <div class='info-row'>
+            <span class='info-key'>Refresh</span>
+            <span class='info-value'>
+                <a href='/ride/status/'>Refresh</a>
             </span>
         </div>
     </div>
