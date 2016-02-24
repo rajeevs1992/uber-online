@@ -134,6 +134,8 @@ STATIC_ROOT = '/static/'
 LOGIN_URL = '/'
 
 API_URL = 'https://sandbox-api.uber.com'
+REDIRECT_URI = 'http://localhost:8000/ride/action'
 
 if not DEBUG:
     API_URL = 'https://api.uber.com'
+    REDIRECT_URI = 'https://uber-online.herokuapp.com/ride/action'

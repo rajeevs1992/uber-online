@@ -3,6 +3,7 @@ import requests
 import datetime
 
 from ride.forms import RequestForm
+from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -10,8 +11,6 @@ from ride.models import Request, BookingDetails
 from cab.models import Cab
 from credential.models import UberCredential
 from credential import access_credential as cred
-
-root = 'https://sandbox-api.uber.com'
 
 @login_required
 def index(request):
@@ -57,24 +56,45 @@ def select(request):
             params['response_type'] = 'code'
             params['client_id'] = cred.UBER_CLIENT_ID
             params['scope'] = 'profile request'
+            params['redirect_uri'] = settings.REDIRECT_URI + '/auth'
             return redirect(cred.UBER_LOGIN_URL + '?' + urllib.urlencode(params))
         args = {}
         args['req'] = req
-        args['products'] = get_products(req)
+        args['products'] = get_products(req, request)
         return render(request, 'select.html', args)
 
-def get_products(req):
-    api = root + '/v1/products'
+def get_products(req, request):
+    api = settings.API_URL + '/v1/products'
     params = {}
     params['server_token'] = cred.UBER_SERVER_TOKEN
     params['latitude'] = req.from_latitude
     params['longitude'] = req.from_longitude
     response = requests.get(api, params=params)
-    products = response.json()
-    res = []
-    for p in products['products']:
-        res.append(Cab(p))
-    return res
+    if response.status_code == 200:
+        products = response.json()
+
+        credential = UberCredential.objects.get(user=request.user)
+        headers = {}
+        headers['Authorization'] = 'Bearer ' + credential.access_token
+        params = {}
+        params['start_latitude'] = req.from_latitude
+        params['start_longitude'] = req.from_longitude
+        response = requests.get(settings.API_URL + '/v1/estimates/time', params=params, headers=headers)
+        times = {}
+        if response.status_code == 200:
+            times = response.json()
+            if 'times' in times:
+                for product in times['times']:
+                    times[product['product_id']] = product['estimate']
+        res = []
+        for p in products['products']:
+            c = Cab(p)
+            if c.product_id in times:
+                c.eta = times[c.product_id]
+            res.append(c)
+        return res
+    else:
+        return []
 
 @login_required
 def action(request, target):
@@ -84,11 +104,14 @@ def action(request, target):
         params['client_secret'] = cred.UBER_CLIENT_SECRET
         params['client_id'] = cred.UBER_CLIENT_ID
         params['grant_type'] = 'authorization_code'
-        params['redirect_uri'] = 'http://localhost:8000/ride/action/auth'
+        params['redirect_uri'] = settings.REDIRECT_URI + '/auth'
         params['code'] = authorization_code
 
         response = requests.post(cred.UBER_AUTH_URL,
                                  data=params)
+        # Ensure single user
+        UberCredential.objects.filter(user=request.user).delete()
+
         response = response.json()
         credential = UberCredential()
         credential.user = request.user
@@ -99,15 +122,29 @@ def action(request, target):
         credential.scope = response.get('scope')
         credential.created_date = datetime.datetime.now()
         credential.save()
-        req = Request.objects.get(user=request.user)
-        return redirect('select', requestid=req.id)
+        return redirect('select')
     elif target == 'surge':
         req = Request.objects.get(user=request.user)
         return redirect('book', productid=req.productid)
+    elif target == 'refresh':
+        params = {}
+        cred = UberCredential.objects.get(user=request.user)
+        params['client_secret'] = cred.UBER_CLIENT_SECRET
+        params['client_id'] = cred.UBER_CLIENT_ID
+        params['grant_type'] = 'refresh_token'
+        params['redirect_uri'] = settings.REDIRECT_URI + '/auth'
+        params['refresh_token'] = cred.refresh_token
+
+        response = requests.post(cred.UBER_AUTH_URL,
+                                 data=params)
+        response = response.json()
+        cred.access_token = response.get('access_token')
+        cred.save()
+        return redirect('select')
 
 @login_required
 def book(request, productid):
-    api = root + '/v1/requests'
+    api = settings.API_URL + '/v1/requests'
     credential = UberCredential.objects.get(user=request.user)
     req = Request.objects.get(user=request.user)
     if req.requestid is None:
@@ -129,7 +166,7 @@ def book(request, productid):
             req.requestid = response.json().get('request_id')
             req.save()
             return redirect('status')
-        elif response.status == 409:
+        elif response.status_code == 409:
             r = response.json()
             if 'surge_confirmation' in r['meta']:
                 req.surge_confirmation_id = r['meta']['surge_confirmation']['surge_confirmation_id']
@@ -144,13 +181,16 @@ def delete(request):
     credential = UberCredential.objects.get(user=request.user)
     headers = {}
     headers['Authorization'] = 'Bearer ' + credential.access_token
-    api = root + '/v1/requests/' + r.requestid
+    api = settings.API_URL + '/v1/requests/' + r.requestid
     r = requests.delete(api, headers=headers)
-    return redirect('request')
+    if r.status_code == 204:
+        return redirect('request')
+    else:
+        return redirect('status')
 
 @login_required
 def status(request):
-    api = root + '/v1/requests/'
+    api = settings.API_URL + '/v1/requests/'
     r = Request.objects.get(user=request.user)
     credential = UberCredential.objects.get(user=request.user)
     headers = {}
