@@ -6,7 +6,7 @@ from django.contrib.auth.models import User
 class UberCredential(models.Model):
     user = models.OneToOneField(User)
     authorization_code = models.CharField(max_length=512)
-    access_token = models.CharField(max_length=512)
+    access_token = models.CharField(max_length=2048)
     refresh_token = models.CharField(max_length=512)
     expires_in = models.IntegerField()
     scope = models.CharField(max_length=512)
