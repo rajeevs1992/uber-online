@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
-<h1 class='page-heading'>Confirm ride</h1>
+<h1 class='page-heading'>Select ride</h1>
     <h4 class='page-sub-heading'>Request info</h4>
     <div class='info'>
         <div class='info-row'>
@@ -28,11 +28,13 @@
     <div class='grid'>
         <div class='header row'>
             <span class='col'>Type</span>
+            <span class='col'>Arrival time</span>
             <span class='col'>Book</span>
         </div>
         {% for p in products %}
             <div class='row'>
                 <span class='col'>{{ p.display_name }}</span>
+                <span class='col'>{{ p.eta }}</span>
                 <span class='col'>
                     <a href='/ride/book/{{ p.product_id}}'>Book</a>
                 </span>
