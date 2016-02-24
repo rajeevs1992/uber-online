@@ -113,6 +113,7 @@ def action(request, target):
         UberCredential.objects.filter(user=request.user).delete()
 
         response = response.json()
+        print response
         credential = UberCredential()
         credential.user = request.user
         credential.authorization_code = authorization_code.strip()
