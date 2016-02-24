@@ -118,7 +118,7 @@ def action(request, target):
         credential.authorization_code = authorization_code.strip()
         credential.access_token = response.get('access_token').strip()
         credential.refresh_token = response.get('refresh_token').strip()
-        credential.expires_in = response.get('expires_in').strip()
+        credential.expires_in = response.get('expires_in')
         credential.scope = response.get('scope').strip()
         credential.created_date = datetime.datetime.now()
         credential.save()
