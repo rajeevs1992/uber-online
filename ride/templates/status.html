@@ -26,26 +26,55 @@
             <span class='info-key'>Status</span>
             <span class='info-value'>{{ details.status }}</span>
         </div>
-        <div class='info-row'>
-            <span class='info-key'>driver</span>
-            <span class='info-value'>{{ details.driver }}</span>
-        </div>
+        {% if details.eta %} 
         <div class='info-row'>
             <span class='info-key'>Arrives in</span>
             <span class='info-value'>{{ details.eta }}</span>
         </div>
+        {% endif %}
+        {% if details.location %} 
         <div class='info-row'>
             <span class='info-key'>Location</span>
-            <span class='info-value'>{{ details.location }}</span>
+            <span class='info-value'>{{ details.location.latitude }}, {{ details.location.longitude }}</span>
         </div>
-        <div class='info-row'>
-            <span class='info-key'>Vehicle</span>
-            <span class='info-value'>{{ details.vehicle }}</span>
-        </div>
+        {% endif %}
+        {% if details.surge %} 
         <div class='info-row'>
             <span class='info-key'>Surge</span>
             <span class='info-value'>{{ details.surge }}</span>
         </div>
+        {% endif %}
+    </div>
+    {% if details.driver %}
+    <h4 class='page-sub-heading'>Driver details</h4>
+    <div class='info'>
+        <div class='info-row'>
+            <span class='info-key'>Name</span>
+            <span class='info-value'>{{ details.driver.name }}</span>
+        </div>
+        <div class='info-row'>
+            <span class='info-key'>Number</span>
+            <span class='info-value'>
+                <a href='tel:{{ details.driver.phone }}'>{{details.driver.phone }}</a>
+            </span>
+        </div>
+    </div>
+    {% endif %}
+    {% if details.vehicle %}
+    <h4 class='page-sub-heading'>Vehicle details</h4>
+    <div class='info'>
+        <div class='info-row'>
+            <span class='info-key'>Vehicle</span>
+            <span class='info-value'>{{ details.vehicle.make }} {{ details.vehicle.model}}</span>
+        </div>
+        <div class='info-row'>
+            <span class='info-key'>Number</span>
+            <span class='info-value'>{{ details.vehicle.license_plate }}</span>
+        </div>
+    </div>
+    {% endif %}
+    <hr />
+    <div>
         <div class='info-row'>
             <span class='info-key'>Refresh</span>
             <span class='info-value'>
@@ -56,12 +85,6 @@
             <span class='info-key'>Cancel</span>
             <span class='info-value'>
                 <a href='/ride/delete/' onclick='return confirm("Cancel ride?")'>Cancel</a>
-            </span>
-        </div>
-        <div class='info-row'>
-            <span class='info-key'>Home</span>
-            <span class='info-value'>
-                <a href='/ride/'>Home</a>
             </span>
         </div>
     </div>

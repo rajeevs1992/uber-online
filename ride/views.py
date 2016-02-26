@@ -28,20 +28,31 @@ def index(request):
             return render(request, 'request.html', {'form' : form})
         
         to_latitude = to_longitude = None
-        if form.cleaned_data['to_latitude'] and form.cleaned_data['to_longitude']:
-            to_latitude = form.cleaned_data['to_latitude']
-            to_longitude = form.cleaned_data['to_longitude']
-        elif form.cleaned_data['destination']:
+        if form.cleaned_data['destination']:
             to_latitude = form.cleaned_data['destination'].latitude
             to_longitude = form.cleaned_data['destination'].longitude
+        elif form.cleaned_data['to_latitude'] and form.cleaned_data['to_longitude']:
+            to_latitude = form.cleaned_data['to_latitude']
+            to_longitude = form.cleaned_data['to_longitude']
         else:
             form.add_error('destination', 'Specify destination coords or choose from dropdown')
             return render(request, 'request.html', {'form' : form})
 
+        from_latitude = from_longitude = None
+        if form.cleaned_data['source']:
+            from_latitude = form.cleaned_data['source'].latitude
+            from_longitude = form.cleaned_data['source'].longitude
+        elif form.cleaned_data['from_latitude'] and form.cleaned_data['from_longitude']:
+            from_latitude = form.cleaned_data['from_latitude']
+            from_longitude = form.cleaned_data['from_longitude']
+        else:
+            form.add_error('source', 'Specify source coords or choose from dropdown')
+            return render(request, 'request.html', {'form' : form})
+
         req = Request()
         req.user = request.user
-        req.from_latitude = form.cleaned_data['from_latitude']
-        req.from_longitude = form.cleaned_data['from_longitude']
+        req.from_latitude = from_latitude
+        req.from_longitude = from_longitude
         req.to_latitude = to_latitude
         req.to_longitude = to_longitude
         req.pending = True
@@ -94,7 +105,7 @@ def get_products(req, request):
         for p in products['products']:
             c = Cab(p)
             if c.product_id in times:
-                c.eta = times[c.product_id]
+                c.eta = times[c.product_id]/60
             res.append(c)
         return res
     else:
@@ -131,8 +142,9 @@ def action(request, target):
         credential.save()
         return redirect('select')
     elif target == 'surge':
-        req = Request.objects.get(user=request.user, pending=True)
-        return redirect('book', productid=req.productid)
+        req = Request.objects.filter(user=request.user, pending=True)
+        if req:
+            return redirect('book', productid=req.first().productid)
     elif target == 'reauth':
         UberCredential.objects.filter(user=request.user).delete()
         params = {}
@@ -141,13 +153,16 @@ def action(request, target):
         params['scope'] = 'profile request'
         params['redirect_uri'] = settings.REDIRECT_URI + '/auth'
         return redirect(cred.UBER_LOGIN_URL + '?' + urllib.urlencode(params))
-        return redirect('request')
+    return redirect('request')
 
 @login_required
 def book(request, productid):
     api = settings.API_URL + '/v1/requests'
     credential = UberCredential.objects.get(user=request.user)
-    req = Request.objects.get(user=request.user, pending=True)
+    req = Request.objects.filter(user=request.user, pending=True)
+    if not req:
+        return redirect('request')
+    req = req.first()
     if req.requestid is None:
         req.productid = productid
         headers = {}
@@ -173,12 +188,19 @@ def book(request, productid):
                 req.surge_confirmation_id = r['meta']['surge_confirmation']['surge_confirmation_id']
                 req.save()
                 return redirect(r['meta']['surge_confirmation']['href'])
+        else:
+            messages.error(request, response.json())
+            return redirect('request')
     else:
         return redirect('status')
 
 @login_required
 def delete(request):
-    r = Request.objects.get(user=request.user, pending=True)
+    r = Request.objects.filter(user=request.user, pending=True)
+    if not r:
+        messages.info(request, 'No active rides to delete')
+        return redirect('request')
+    r = r.first()
     credential = UberCredential.objects.get(user=request.user)
     headers = {}
     headers['Authorization'] = 'Bearer ' + credential.access_token
@@ -187,14 +209,19 @@ def delete(request):
     if response.status_code == 204:
         r.pending = False
         r.save()
+        messages.success(request, 'Ride cancelled')
         return redirect('request')
     else:
+        messages.error(request, response.json())
         return redirect('status')
 
 @login_required
 def status(request):
     api = settings.API_URL + '/v1/requests/'
-    r = Request.objects.get(user=request.user, pending=True)
+    r = Request.objects.filter(user=request.user, pending=True)
+    if not r:
+        return redirect('request')
+    r = r.first()
     credential = UberCredential.objects.get(user=request.user)
     headers = {}
     headers['Authorization'] = 'Bearer ' + credential.access_token
@@ -202,8 +229,14 @@ def status(request):
 
     if response.status_code == 200:
         args = {}
-        args['details'] = BookingDetails(response.json())
+        response = response.json()
+        if response['status'] == 'completed':
+            r.pending = False
+            r.save()
+            messages.info(request, 'Ride completed')
+            return redirect('request')
         args['req'] = r
+        args['details'] = BookingDetails(response)
         return render(request, 'status.html', args)
     else:
         r.pending = False
