@@ -33,8 +33,22 @@ class BookingDetails:
     def __init__(self, details):
         self.status = details['status']
         self.requestid = details['request_id']
-        self.driver = details['driver']
+        if details['driver']:
+            self.driver = Driver(details['driver'])
         self.eta = details['eta']
         self.location = details['location']
-        self.vehicle = details['vehicle']
+        if details['vehicle']:
+            self.vehicle = Vehicle(details['vehicle'])
         self.surge = details['surge_multiplier']
+
+class Vehicle:
+    def __init__(self, details):
+        self.make = details['make']
+        self.model = details['model']
+        self.license_plate = details['license_plate']
+
+class Driver:
+    def __init__(self, details):
+        self.phone = details['phone_number']
+        self.rating = details['rating']
+        self.name = details['name']

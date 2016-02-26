@@ -7,9 +7,9 @@
         {
             navigator.geolocation.getCurrentPosition(function (loc) {
                 var lat = document.getElementById('id_from_latitude');
-                lat.value = loc.coords.latitude;
+                lat.value = loc.coords.latitude.toFixed(6);
                 var lng = document.getElementById('id_from_longitude');
-                lng.value = loc.coords.longitude;
+                lng.value = loc.coords.longitude.toFixed(6);
                 
             });
         } 

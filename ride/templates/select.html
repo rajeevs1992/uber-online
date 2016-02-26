@@ -21,6 +21,7 @@
         </div>
     </div>
     <h4 class='page-sub-heading'>Cabs</h4>
+    {% if products %}
     <div class='grid'>
         <div class='header row'>
             <span class='col'>Type</span>
@@ -37,4 +38,8 @@
             </div>
         {% endfor %}
     </div>
+    {% else %}
+        <div class='info'>No cabs</div>
+    {% endif %}
+
 {% endblock %}
