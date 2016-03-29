@@ -20,7 +20,7 @@ def index(request):
             if pending.first().requestid:
                 return redirect('status')
             pending.update(pending=False)
-        return render(request, 'request.html', {'form' : RequestForm(request.user)})
+        return render(request, 'request.html', {'form' : RequestForm(request.user), 'api':cred.API_URL})
     else:
         form = RequestForm(request.user, request.POST)
         if not form.is_valid():
